@@ -19,6 +19,7 @@ struct TransactionBuilder {
         case value
         case memo
         case noteId
+        case accountIndex
         case blockTimeInSeconds
     }
     
@@ -31,6 +32,7 @@ struct TransactionBuilder {
         case value
         case memo
         case noteId
+        case accountIndex
         case blockTimeInSeconds
     }
     
@@ -81,6 +83,7 @@ struct TransactionBuilder {
         
         let minedHeight = bindings[ConfirmedColumns.minedHeight.rawValue] as? Int64 ?? -1
         let blockTimeInSeconds = bindings[ConfirmedColumns.blockTimeInSeconds.rawValue] as? Int64 ?? 0
+        let accountIndex = bindings[ConfirmedColumns.accountIndex.rawValue] as? Int ?? -1
         // Optional values
         
         var toAddress: String?
@@ -108,7 +111,7 @@ struct TransactionBuilder {
             transactionId = Data(blob: txIdBlob)
         }
         
-        return ConfirmedTransaction(toAddress: toAddress,
+        return ConfirmedTransaction(account: accountIndex, toAddress: toAddress,
                                     expiryHeight: expiryHeight,
                                     minedHeight: Int(minedHeight),
                                     noteId: Int(noteId),
@@ -127,7 +130,9 @@ struct TransactionBuilder {
             let noteId = bindings[ReceivedColumns.noteId.rawValue] as? Int64,
             let blockTimeInSeconds = bindings[ReceivedColumns.blockTimeInSeconds.rawValue] as? Int64,
             let transactionIndex = bindings[ReceivedColumns.transactionIndex.rawValue] as? Int64,
-            let value = bindings[ReceivedColumns.value.rawValue] as? Int64
+            let value = bindings[ReceivedColumns.value.rawValue] as? Int64,
+            let accountIndex = bindings[ReceivedColumns.accountIndex.rawValue] as? Int
+        
             else { return nil }
         
         // Optional values
@@ -146,7 +151,9 @@ struct TransactionBuilder {
         if let rawBlob = bindings[ReceivedColumns.raw.rawValue] as? Blob {
             rawData = Data(blob: rawBlob)
         }
-        return ConfirmedTransaction(toAddress: nil,
+        
+        return ConfirmedTransaction(account: accountIndex,
+                                    toAddress: nil,
                                     expiryHeight: nil,
                                     minedHeight: Int(minedHeight),
                                     noteId: Int(noteId),

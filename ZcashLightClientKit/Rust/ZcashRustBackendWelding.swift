@@ -190,7 +190,7 @@ public protocol ZcashRustBackendWelding {
     - Returns: an array containing the derived keys
     - Throws: RustBackendError if fatal error occurs
     */
-    static func deriveExtendedFullViewingKeys(seed: String, accounts: Int32) throws -> [String]?
+    static func deriveExtendedFullViewingKeys(seed: [UInt8], accounts: Int32) throws -> [String]?
     
     /**
     Derives a set of full viewing keys from a seed
@@ -199,8 +199,18 @@ public protocol ZcashRustBackendWelding {
     - Returns: an array containing the spending keys
     - Throws: RustBackendError if fatal error occurs
     */
-    static func deriveExtendedSpendingKeys(seed: String, accounts: Int32) throws -> [String]?
+    static func deriveExtendedSpendingKeys(seed: [UInt8], accounts: Int32) throws -> [String]?
     
+    
+    
+    /**
+     * Imports a viewing key. This key will be incorporated into scans such that any
+     * transactions that correspond to it will be decrypted and grouped by account.
+     * Returns the accountId of the newly imported key.
+     */
+    
+    static func importExtendedFullViewingKey(dbData: URL,
+                                             extfvk: String) throws -> Int32
     /**
      Gets the consensus branch id for the given height
      - Parameter height: the height you what to know the branch id for

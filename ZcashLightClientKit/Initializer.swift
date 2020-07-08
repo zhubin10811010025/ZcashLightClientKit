@@ -57,11 +57,14 @@ public class Initializer {
     private(set) var spendParamsURL: URL
     private(set) var outputParamsURL: URL
     private var walletBirthday: WalletBirthday?
-    private(set) var lightWalletService: LightWalletService
     private(set) var transactionRepository: TransactionRepository
     private(set) var downloader: CompactBlockDownloader
     private(set) var processor: CompactBlockProcessor?
 
+    /**
+      underlying LightWalletd Service
+     */
+    public private(set) var lightWalletService: LightWalletService
     /**
      Constructs the Initializer
      - Parameters:
@@ -258,4 +261,38 @@ public struct WalletBirthday {
    public private(set) var hash: String = ""
    public private(set) var time: UInt32 = 0
    public private(set) var tree: String = ""
+}
+
+public extension Initializer {
+    func keyDerivationHelper() -> KeyDerivationHelper {
+        KeyDerivationHelper(rust: self.rustBackend)
+    }
+    
+    func importExtendedFullViewingKey(_ extfvk: String) throws -> Int32 {
+        try rustBackend.importExtendedFullViewingKey(dbData: self.dataDbURL, extfvk: extfvk)
+    }
+    
+    func rewindTo(_ height: BlockHeight) throws {
+        try downloader.rewind(to: height)
+    }
+}
+
+public final class KeyDerivationHelper {
+    var rustBackend: ZcashRustBackendWelding.Type
+    
+    init(rust: ZcashRustBackendWelding.Type) {
+        self.rustBackend = rust
+    }
+    
+    public func deriveExtendedFullViewingKey(_ spendingKey: String) throws -> String? {
+        try rustBackend.deriveExtendedFullViewingKey(spendingKey)
+    }
+    
+    public func deriveExtendedFullViewingKeys(seed: [UInt8], accounts: Int32) throws -> [String]? {
+        try rustBackend.deriveExtendedFullViewingKeys(seed: seed, accounts: accounts)
+    }
+    
+    public func deriveExtendedSpendingKeys(seed: [UInt8], accounts: Int32) throws -> [String]? {
+        try rustBackend.deriveExtendedSpendingKeys(seed: seed, accounts: accounts)
+    }    
 }

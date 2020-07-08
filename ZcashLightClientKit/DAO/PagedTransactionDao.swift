@@ -35,11 +35,11 @@ class PagedTransactionDAO: PaginatedTransactionRepository {
     func getAll(offset: Int, limit: Int, kind: TransactionKind) throws -> [ConfirmedTransactionEntity]? {
         switch kind {
         case .all:
-            return try transactionRepository.findAll(offset: offset, limit: limit)
+            return try transactionRepository.findAll(offset: offset, limit: limit, accountIndex: 0)
         case .received:
-            return try transactionRepository.findAll(offset: offset, limit: limit)
+            return try transactionRepository.findAll(offset: offset, limit: limit, accountIndex: 0)
         case .sent:
-            return try transactionRepository.findAllSentTransactions(offset: offset, limit: limit)
+            return try transactionRepository.findAllSentTransactions(offset: offset, limit: limit, accountIndex: 0)
         }
     }
     

@@ -29,6 +29,7 @@ struct Transaction: TransactionEntity, Decodable {
 }
 
 struct ConfirmedTransaction: ConfirmedTransactionEntity {
+    var account: Int
     var toAddress: String?
     var expiryHeight: BlockHeight?
     var minedHeight: Int
@@ -99,7 +100,7 @@ class TransactionSQLDAO: TransactionRepository {
         return entity
     }
     
-    func findAllSentTransactions(offset: Int = 0, limit: Int = Int.max) throws -> [ConfirmedTransactionEntity]? {
+    func findAllSentTransactions(offset: Int = 0, limit: Int = Int.max, accountIndex: Int = 0) throws -> [ConfirmedTransactionEntity]? {
         try dbProvider.connection().run("""
             SELECT transactions.id_tx         AS id,
                    transactions.block         AS minedHeight,
@@ -111,6 +112,7 @@ class TransactionSQLDAO: TransactionRepository {
                    sent_notes.value           AS value,
                    sent_notes.memo            AS memo,
                    sent_notes.id_note         AS noteId,
+                   sent_notes.account         AS accountIndex
                    blocks.time                AS blockTimeInSeconds
             FROM   transactions
                    INNER JOIN sent_notes
@@ -119,6 +121,7 @@ class TransactionSQLDAO: TransactionRepository {
                           ON transactions.block = blocks.height
             WHERE  transactions.raw IS NOT NULL
                    AND minedheight > 0
+                   AND accountIndex = \(accountIndex)
                    
             ORDER  BY block IS NOT NULL, height DESC, time DESC, txid DESC
             LIMIT  \(limit) OFFSET \(offset)
@@ -130,7 +133,7 @@ class TransactionSQLDAO: TransactionRepository {
         })
     }
     
-    func findAllReceivedTransactions(offset: Int = 0, limit: Int = Int.max) throws -> [ConfirmedTransactionEntity]? {
+    func findAllReceivedTransactions(offset: Int = 0, limit: Int = Int.max, accountIndex: Int = 0) throws -> [ConfirmedTransactionEntity]? {
         try dbProvider.connection().run("""
             SELECT transactions.id_tx     AS id,
                    transactions.block     AS minedHeight,
@@ -140,6 +143,7 @@ class TransactionSQLDAO: TransactionRepository {
                    received_notes.value   AS value,
                    received_notes.memo    AS memo,
                    received_notes.id_note AS noteId,
+                   received_notes.account AS accountIndex
                    blocks.time            AS blockTimeInSeconds
                    
             FROM   transactions
@@ -147,7 +151,9 @@ class TransactionSQLDAO: TransactionRepository {
                           ON transactions.id_tx = received_notes.tx
                    LEFT JOIN blocks
                           ON transactions.block = blocks.height
-            WHERE  received_notes.is_change != 1
+            WHERE  received_notes.is_change != 1 AND
+                   received_notes.account = \(accountIndex)
+
             ORDER  BY minedheight DESC, blocktimeinseconds DESC, id DESC
             LIMIT  \(limit) OFFSET \(offset)
             """).map({ (bindings) -> ConfirmedTransactionEntity in
@@ -158,7 +164,7 @@ class TransactionSQLDAO: TransactionRepository {
             })
     }
     
-    func findAll(offset: Int = 0, limit: Int = Int.max) throws -> [ConfirmedTransactionEntity]? {
+    func findAll(offset: Int = 0, limit: Int = Int.max, accountIndex: Int = 0) throws -> [ConfirmedTransactionEntity]? {
         try dbProvider.connection().run("""
              SELECT transactions.id_tx          AS id,
                            transactions.block           AS minedHeight,
@@ -179,6 +185,10 @@ class TransactionSQLDAO: TransactionRepository {
                              WHEN sent_notes.id_note IS NOT NULL THEN sent_notes.id_note
                              ELSE received_notes.id_note
                            end                          AS noteId,
+                           CASE
+                             WHEN sent_notes.account IS NOT NULL THEN sent_notes.acount
+                             ELSE received_notes.account
+                           end                          AS accountIndex,
                            blocks.time                  AS blockTimeInSeconds
                      FROM   transactions
                            LEFT JOIN received_notes

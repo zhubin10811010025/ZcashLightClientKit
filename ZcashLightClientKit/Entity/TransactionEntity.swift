@@ -121,4 +121,6 @@ public protocol ConfirmedTransactionEntity: MinedTransactionEntity, SignedTransa
      expiration height for this transaction
      */
     var expiryHeight: BlockHeight? { get set }
+    
+    var account: Int { get set }
 }

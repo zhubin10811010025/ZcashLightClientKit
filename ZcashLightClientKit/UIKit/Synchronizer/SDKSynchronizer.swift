@@ -444,20 +444,20 @@ public class SDKSynchronizer: Synchronizer {
         transactionManager.cancel(pendingTransaction: transaction)
     }
     
-    public func allReceivedTransactions() throws -> [ConfirmedTransactionEntity] {
-        try transactionRepository.findAllReceivedTransactions(offset: 0, limit: Int.max) ?? [ConfirmedTransactionEntity]()
+    public func allReceivedTransactions(accountIndex: Int = 0) throws -> [ConfirmedTransactionEntity] {
+        try transactionRepository.findAllReceivedTransactions(offset: 0, limit: Int.max, accountIndex: accountIndex) ?? [ConfirmedTransactionEntity]()
     }
     
-    public func allPendingTransactions() throws -> [PendingTransactionEntity] {
+    public func allPendingTransactions(accountIndex: Int = 0) throws -> [PendingTransactionEntity] {
         try transactionManager.allPendingTransactions() ?? [PendingTransactionEntity]()
     }
     
-    public func allClearedTransactions() throws -> [ConfirmedTransactionEntity] {
-        try transactionRepository.findAll(offset: 0, limit: Int.max) ?? [ConfirmedTransactionEntity]()
+    public func allClearedTransactions(accountIndex: Int = 0) throws -> [ConfirmedTransactionEntity] {
+        try transactionRepository.findAll(offset: 0, limit: Int.max, accountIndex: accountIndex) ?? [ConfirmedTransactionEntity]()
     }
     
-    public func allSentTransactions() throws -> [ConfirmedTransactionEntity] {
-        try transactionRepository.findAllSentTransactions(offset: 0, limit: Int.max) ?? [ConfirmedTransactionEntity]()
+    public func allSentTransactions(accountIndex: Int = 0) throws -> [ConfirmedTransactionEntity] {
+        try transactionRepository.findAllSentTransactions(offset: 0, limit: Int.max, accountIndex: 0) ?? [ConfirmedTransactionEntity]()
     }
     
     public func paginatedTransactions(of kind: TransactionKind = .all) -> PaginatedTransactionRepository {

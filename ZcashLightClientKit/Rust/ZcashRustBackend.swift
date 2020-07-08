@@ -207,9 +207,9 @@ class ZcashRustBackend: ZcashRustBackendWelding {
         return derived
     }
     
-    static func deriveExtendedFullViewingKeys(seed: String, accounts: Int32) throws -> [String]? {
+    static func deriveExtendedFullViewingKeys(seed: [UInt8], accounts: Int32) throws -> [String]? {
         
-        guard let extsksCStr = zcashlc_derive_extended_full_viewing_keys(seed, UInt(seed.lengthOfBytes(using: .utf8)), accounts) else {
+        guard let extsksCStr = zcashlc_derive_extended_full_viewing_keys(seed, UInt(seed.count), accounts) else {
             if let error = lastError() {
                 throw error
             }
@@ -224,8 +224,8 @@ class ZcashRustBackend: ZcashRustBackendWelding {
         return extsks
     }
     
-    static func deriveExtendedSpendingKeys(seed: String, accounts: Int32) throws -> [String]? {
-        guard let extsksCStr = zcashlc_derive_extended_spending_keys(seed, UInt(seed.lengthOfBytes(using: .utf8)), accounts) else {
+    static func deriveExtendedSpendingKeys(seed: [UInt8], accounts: Int32) throws -> [String]? {
+        guard let extsksCStr = zcashlc_derive_extended_spending_keys(seed, UInt(seed.count), accounts) else {
             if let error = lastError() {
                 throw error
             }
@@ -238,6 +238,20 @@ class ZcashRustBackend: ZcashRustBackendWelding {
         })
         zcashlc_vec_string_free(extsksCStr, UInt(accounts))
         return extsks
+    }
+    
+    static func importExtendedFullViewingKey(dbData: URL, extfvk: String) throws -> Int32 {
+        
+        guard !extfvk.containsCStringNullBytesBeforeStringEnding() else {
+            throw RustWeldingError.malformedStringInput
+        }
+        
+        let dbData = dbData.osStr()
+        
+        return zcashlc_import_viewing_key(dbData.0,
+                                   dbData.1,
+                                   [CChar](extfvk.utf8CString)
+                                    )
     }
     
     static func consensusBranchIdFor(height: Int32) throws -> Int32 {
