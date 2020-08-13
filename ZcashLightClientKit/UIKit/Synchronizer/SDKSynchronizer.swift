@@ -63,6 +63,35 @@ public extension Notification.Name {
  Synchronizer implementation for UIKit and iOS 12+
  */
 public class SDKSynchronizer: Synchronizer {
+     
+    public func unspentTransactionOutputs(for transparentAddress: String, result: @escaping (Result<Bool,SynchronizerError>) -> Void)  {
+        guard let latestDownloadedHeight = try? initializer.downloader.lastDownloadedBlockHeight() else {
+            result(.failure(.generalError(message: "error")))
+            return
+        }
+        let rust = initializer.rustBackend
+        let url = initializer.dataDbURL
+        initializer.lightWalletService.fetchTransactions(for: transparentAddress, range: ZcashSDK.SAPLING_ACTIVATION_HEIGHT ... latestDownloadedHeight) { (r) in
+            switch r {
+            case .success(let rawTransactions):
+                
+                DispatchQueue.global().async {
+                    
+                    for rawTx in rawTransactions {
+                        guard rust.decryptAndStoreTransaction(dbData: url, tx: rawTx.data.bytes) else {
+                            let underlyingError = rust.lastError() ?? RustWeldingError.genericError(message: "could not decrypt tx \(rawTx.data.toHexStringTxId())")
+                            result(.failure(SynchronizerError.uncategorized(underlyingError: underlyingError)))
+                            return
+                        }
+                    }
+                }
+                break
+            case .failure(let error):
+                result(Result.failure(Self.mapError(error)))
+                break
+            }
+        }
+    }
 
     public struct NotificationKeys {
         public static let progress = "SDKSynchronizer.progress"
@@ -145,7 +174,7 @@ public class SDKSynchronizer: Synchronizer {
         do {
             try processor.start(retry: retry)
         } catch {
-            throw mapError(error)
+            throw Self.mapError(error)
         }
         
     }
@@ -362,17 +391,11 @@ public class SDKSynchronizer: Synchronizer {
     }
     
     // MARK: application notifications
-    @objc func applicationDidBecomeActive(_ notification: Notification) {
-        
-    }
+    @objc func applicationDidBecomeActive(_ notification: Notification) {}
     
     @objc func applicationDidEnterBackground(_ notification: Notification) {
         if !self.isBackgroundAllowed {
-            do {
-                try self.stop()
-            } catch {
-                self.status = .disconnected
-            }
+            self.stop()
         }
     }
     
@@ -396,12 +419,6 @@ public class SDKSynchronizer: Synchronizer {
     @objc func applicationWillResignActive(_ notification: Notification) {
         registerBackgroundActivity()
         LoggerProxy.debug("applicationWillResignActive")
-//        do {
-//
-//            try stop()
-//        } catch {
-//            LoggerProxy.debug("stop failed with error: \(error)")
-//        }
     }
     
     @objc func applicationWillTerminate(_ notification: Notification) {
@@ -533,7 +550,7 @@ public class SDKSynchronizer: Synchronizer {
         }
     }
     
-    private func mapError(_ error: Error) -> Error {
+    static private func mapError(_ error: Error) -> SynchronizerError {
             if let compactBlockProcessorError = error as? CompactBlockProcessorError {
             switch compactBlockProcessorError {
             case .dataDbInitFailed(let path):
@@ -567,7 +584,7 @@ public class SDKSynchronizer: Synchronizer {
             [weak self] in
         guard let self = self else { return }
             
-            NotificationCenter.default.post(name: Notification.Name.synchronizerFailed, object: self, userInfo: [NotificationKeys.error : self.mapError(error)])
+            NotificationCenter.default.post(name: Notification.Name.synchronizerFailed, object: self, userInfo: [NotificationKeys.error : Self.mapError(error)])
         }
     }
 }

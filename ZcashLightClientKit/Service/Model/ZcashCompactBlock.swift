@@ -50,3 +50,13 @@ extension ZcashCompactBlock: Hashable {
         hasher.combine(data)
     }
 }
+
+/**
+ Represents entities that can pose as RawTransactions from LightwalletD or Zcashd
+ */
+public protocol RawTransactionRepresentable {
+    var height: UInt64 { get }
+    var data: Data { get }
+}
+
+extension RawTransaction: RawTransactionRepresentable {}

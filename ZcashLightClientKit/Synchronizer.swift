@@ -81,6 +81,7 @@ public protocol Synchronizer {
     
     func cancelSpend(transaction: PendingTransactionEntity) -> Bool
     
+    func unspentTransactionOutputs(for transparentAddress: String, result: @escaping (Result<Bool,SynchronizerError>) -> Void)
     /**
         all outbound pending transactions that have been sent but are awaiting confirmations
      */

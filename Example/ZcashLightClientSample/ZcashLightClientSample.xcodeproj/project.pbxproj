@@ -32,6 +32,8 @@
 		0D8BB46423B1DA0700D5E2A1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0D907F192322CC5900D641FE /* Main.storyboard */; };
 		0D8BB46623B1DA0700D5E2A1 /* sapling-output.params in Resources */ = {isa = PBXBuildFile; fileRef = 0D2343EC238C91B900606F71 /* sapling-output.params */; };
 		0D8BB46723B1DA0700D5E2A1 /* sapling-spend.params in Resources */ = {isa = PBXBuildFile; fileRef = 0D2343ED238C91B900606F71 /* sapling-spend.params */; };
+		0D905AF924E49E310005C68B /* GetTransparentTransactionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D905AF824E49E310005C68B /* GetTransparentTransactionsViewController.swift */; };
+		0D905AFA24E49E310005C68B /* GetTransparentTransactionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D905AF824E49E310005C68B /* GetTransparentTransactionsViewController.swift */; };
 		0D907F162322CC5900D641FE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907F152322CC5900D641FE /* AppDelegate.swift */; };
 		0D907F182322CC5900D641FE /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D907F172322CC5900D641FE /* ViewController.swift */; };
 		0D907F1B2322CC5900D641FE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0D907F192322CC5900D641FE /* Main.storyboard */; };
@@ -80,6 +82,7 @@
 		0D7C85E423AD5A9B006878FC /* SampleStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleStorage.swift; sourceTree = "<group>"; };
 		0D8BB46C23B1DA0700D5E2A1 /* ZcashLightClientSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZcashLightClientSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D8BB46D23B1DA0700D5E2A1 /* ZcashLightClientSample-Mainnet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "ZcashLightClientSample-Mainnet-Info.plist"; path = "/Users/pacu/Repos/ECC/ZcashLightClientKit/Example/ZcashLightClientSample/ZcashLightClientSample-Mainnet-Info.plist"; sourceTree = "<absolute>"; };
+		0D905AF824E49E310005C68B /* GetTransparentTransactionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetTransparentTransactionsViewController.swift; sourceTree = "<group>"; };
 		0D907F122322CC5900D641FE /* ZcashLightClientSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZcashLightClientSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0D907F152322CC5900D641FE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0D907F172322CC5900D641FE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -175,6 +178,14 @@
 			path = "Sync Blocks";
 			sourceTree = "<group>";
 		};
+		0D905AF724E49D6B0005C68B /* get UTXOs */ = {
+			isa = PBXGroup;
+			children = (
+				0D905AF824E49E310005C68B /* GetTransparentTransactionsViewController.swift */,
+			);
+			path = "get UTXOs";
+			sourceTree = "<group>";
+		};
 		0D907F092322CC5900D641FE = {
 			isa = PBXGroup;
 			children = (
@@ -202,6 +213,7 @@
 		0D907F142322CC5900D641FE /* ZcashLightClientSample */ = {
 			isa = PBXGroup;
 			children = (
+				0D905AF724E49D6B0005C68B /* get UTXOs */,
 				0DBF8F9323A80F0E0010B85F /* Transaction Detail */,
 				0DF53E6523A438BA00D7249C /* Paginated Transactions */,
 				0DA58B922397DDBC004596EA /* List Transactions */,
@@ -659,6 +671,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0D8BB45223B1DA0700D5E2A1 /* GetBalanceViewController.swift in Sources */,
+				0D905AFA24E49E310005C68B /* GetTransparentTransactionsViewController.swift in Sources */,
 				0D8BB45323B1DA0700D5E2A1 /* GetAddressViewController.swift in Sources */,
 				0D8BB45423B1DA0700D5E2A1 /* ViewController.swift in Sources */,
 				0D8BB45523B1DA0700D5E2A1 /* LatestHeightViewController.swift in Sources */,
@@ -680,6 +693,7 @@
 			files = (
 				0DCD3DC7238D88B100DD3EC4 /* GetBalanceViewController.swift in Sources */,
 				0D756A94236C761E009B041B /* GetAddressViewController.swift in Sources */,
+				0D905AF924E49E310005C68B /* GetTransparentTransactionsViewController.swift in Sources */,
 				0D907F182322CC5900D641FE /* ViewController.swift in Sources */,
 				0DDFB33C236B743000AED892 /* LatestHeightViewController.swift in Sources */,
 				0DBF8F9523A80F5A0010B85F /* TransactionDetailViewController.swift in Sources */,

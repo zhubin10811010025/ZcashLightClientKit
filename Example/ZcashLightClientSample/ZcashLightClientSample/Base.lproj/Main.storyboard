@@ -238,6 +238,26 @@
                                             <segue destination="6wc-2b-HvC" kind="show" identifier="Paginated" id="tXC-6F-YcU"/>
                                         </connections>
                                     </tableViewCell>
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" textLabel="FDG-sd-7rI" style="IBUITableViewCellStyleDefault" id="DtQ-99-RHS">
+                                        <rect key="frame" x="0.0" y="506.5" width="414" height="43.5"/>
+                                        <autoresizingMask key="autoresizingMask"/>
+                                        <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="DtQ-99-RHS" id="jLs-hY-Zlk">
+                                            <rect key="frame" x="0.0" y="0.0" width="414" height="43.5"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" multipleTouchEnabled="YES" contentMode="left" insetsLayoutMarginsFromSafeArea="NO" text="Get UTXOs" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="FDG-sd-7rI">
+                                                    <rect key="frame" x="20" y="0.0" width="374" height="43.5"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="9mc-92-1AJ" kind="show" id="fA2-ay-beH"/>
+                                        </connections>
+                                    </tableViewCell>
                                 </cells>
                             </tableViewSection>
                         </sections>
@@ -1029,6 +1049,60 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="R73-h3-yvk" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1830" y="1623"/>
+        </scene>
+        <!--Get UTXOs-->
+        <scene sceneID="9LC-Oa-5fg">
+            <objects>
+                <viewController title="Get UTXOs" id="9mc-92-1AJ" customClass="GetTransparentTransactionsViewController" customModule="ZcashLightClientSample" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="qj6-0r-roS">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalCentering" alignment="center" spacing="42" translatesAutoresizingMaskIntoConstraints="NO" id="gUr-Ie-mvd">
+                                <rect key="frame" x="0.0" y="88" width="414" height="774"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transparent Address" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TeO-bi-chS">
+                                        <rect key="frame" x="66" y="0.0" width="282.5" height="38.5"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="32"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" text="t1dRJRY7GmyeykJnMH38mdQoaZtFhn1QmGz" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="Fb4-1B-YCI">
+                                        <rect key="frame" x="20" y="259.5" width="374" height="250"/>
+                                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="250" id="ETl-Ls-GDf"/>
+                                        </constraints>
+                                        <color key="textColor" systemColor="labelColor" cocoaTouchSystemColor="darkTextColor"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                    </textView>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0xg-7S-pIp">
+                                        <rect key="frame" x="146" y="725" width="122" height="49"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="31"/>
+                                        <state key="normal" title="Go fetch!"/>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                        </subviews>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstItem="gUr-Ie-mvd" firstAttribute="top" secondItem="efG-XW-7le" secondAttribute="top" id="0yN-0Q-efH"/>
+                            <constraint firstItem="efG-XW-7le" firstAttribute="bottom" secondItem="gUr-Ie-mvd" secondAttribute="bottom" id="5D4-SY-mBj"/>
+                            <constraint firstItem="efG-XW-7le" firstAttribute="trailing" secondItem="gUr-Ie-mvd" secondAttribute="trailing" id="DFx-zm-At7"/>
+                            <constraint firstItem="gUr-Ie-mvd" firstAttribute="leading" secondItem="efG-XW-7le" secondAttribute="leading" id="cof-vw-ukW"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="efG-XW-7le"/>
+                    </view>
+                    <navigationItem key="navigationItem" id="K9B-IP-S3A"/>
+                    <connections>
+                        <outlet property="button" destination="0xg-7S-pIp" id="epp-cH-W0A"/>
+                        <outlet property="textView" destination="Fb4-1B-YCI" id="V8f-Sc-m8W"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="3Wz-Mv-pPE" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="667" y="949"/>
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>

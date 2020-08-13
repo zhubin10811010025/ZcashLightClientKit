@@ -62,16 +62,37 @@ public class LightWalletGRPCService {
     func latestBlock() throws -> BlockID {
         try compactTxStreamer.getLatestBlock(ChainSpec()).response.wait()
     }
-    
-    func getTx(hash: String) throws -> RawTransaction {
-        var filter = TxFilter()
-        filter.hash = Data(hash.utf8)
-        return try compactTxStreamer.getTransaction(filter).response.wait()
-    }
-    
 }
 
 extension LightWalletGRPCService: LightWalletService {
+    public func fetchTransactions(for transparentAddress: String, range: CompactBlockRange, result: @escaping ((Result<[RawTransactionRepresentable], LightWalletServiceError>) -> Void)) {
+        
+        DispatchQueue.global().async { [weak self] in
+            guard let self = self else { return }
+            
+            var tAddressfilter = TransparentAddressBlockFilter.with { (filter) in
+                filter.address = transparentAddress
+                filter.range = range.blockRange()
+            }
+            var fetchedTransactions = [RawTransactionRepresentable]()
+            self.compactTxStreamer.getAddressTxids(tAddressfilter, callOptions: CallOptions.lwdCall) { (rawTx) in
+                fetchedTransactions.append(rawTx)
+            }.status.whenComplete { (completion) in
+                switch completion {
+                case .failure(let error):
+                    result(.failure(error.mapToServiceError()))
+                case .success(let status):
+                    switch status {
+                    case .ok:
+                        result(.success(fetchedTransactions))
+                    default:
+                        result(.failure(.mapCode(status)))
+                    }
+                }
+            }
+        }
+    }
+    
     public func fetchTransaction(txId: Data) throws -> TransactionEntity {
         var txFilter = TxFilter()
         txFilter.hash = txId
@@ -200,9 +221,7 @@ extension LightWalletGRPCService: LightWalletService {
             } catch {
                 result(.failure(error.mapToServiceError()))
             }
-            
         }
-        
     }
     
     public func latestBlockHeight() throws -> BlockHeight {

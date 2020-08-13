@@ -168,4 +168,10 @@ public protocol LightWalletService {
      - Returns: LightWalletServiceResponse
      */
     func fetchTransaction(txId: Data, result: @escaping (Result<TransactionEntity,LightWalletServiceError>) -> Void)
+    
+ 
+    /**
+     Gets all transactions within a block range for a given t-address
+     */
+    func fetchTransactions(for transparentAddress: String, range: CompactBlockRange, result: @escaping ((Result<[RawTransactionRepresentable], LightWalletServiceError>) -> Void))
 }
