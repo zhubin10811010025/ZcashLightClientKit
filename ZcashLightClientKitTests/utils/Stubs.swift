@@ -77,6 +77,10 @@ extension LightWalletServiceMockResponse {
 }
 
 class MockRustBackend: ZcashRustBackendWelding {
+    static func deriveTransparentPrivateKeyFromSeed(seed: [UInt8]) throws -> String? {
+        nil
+    }
+    
     static func initAccountsTable(dbData: URL, exfvks: [String]) throws -> Bool {
         false
     }
