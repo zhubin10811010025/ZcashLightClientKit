@@ -26,11 +26,9 @@ use zcash_client_sqlite::{
     error::SqliteClientError,
     wallet::{
         init::{init_accounts_table, init_blocks_table, init_wallet_db},
-        get_balance, 
-        get_balance_at,
     },
     BlockDB, NoteId, WalletDB,
-    chain::{UnspentTransactionOutput, get_all_utxos, get_confirmed_utxos_for_address}
+    chain::get_confirmed_utxos_for_address,
 };
 use zcash_primitives::{
     block::BlockHash,
@@ -97,13 +95,13 @@ pub const NETWORK: MainNetwork = MAIN_NETWORK;
 pub const NETWORK: TestNetwork = TEST_NETWORK;
 
 
-fn wallet_db<P: consensus::Parameters>(params: &P,db_data: *const u8,
+fn wallet_db<P: consensus::Parameters>(params: P,db_data: *const u8,
     db_data_len: usize) -> Result<WalletDB<P>, failure::Error> {
         
     let db_data = Path::new(OsStr::from_bytes(unsafe {
             slice::from_raw_parts(db_data, db_data_len)
         }));
-    WalletDB::for_path(db_data, *params)
+    WalletDB::for_path(db_data, params)
         .map_err(|e| format_err!("Error opening wallet database connection: {}", e))
 }
 
@@ -168,7 +166,7 @@ pub extern "C" fn zcashlc_init_accounts_table(
     capacity_ret: *mut usize,
 ) -> *mut *mut c_char {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
         let seed = unsafe { slice::from_raw_parts(seed, seed_len) };
         let accounts = if accounts >= 0 {
             accounts as u32
@@ -214,7 +212,7 @@ pub extern "C" fn zcashlc_init_accounts_table_with_keys(
     extfvks_len: usize,
 ) -> bool {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
 
         let extfvks = unsafe { std::slice::from_raw_parts(extfvks, extfvks_len)
             .into_iter()
@@ -423,7 +421,7 @@ pub extern "C" fn zcashlc_init_blocks_table(
     sapling_tree_hex: *const c_char,
 ) -> i32 {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
         let hash = {
             let mut hash = hex::decode(unsafe { CStr::from_ptr(hash_hex) }.to_str()?).unwrap();
             hash.reverse();
@@ -450,7 +448,7 @@ pub extern "C" fn zcashlc_get_address(
     account: i32,
 ) -> *mut c_char {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
         let account = if account >= 0 {
             account as u32
         } else {
@@ -522,7 +520,7 @@ fn is_valid_transparent_address(address: &str) -> bool {
 #[no_mangle]
 pub extern "C" fn zcashlc_get_balance(db_data: *const u8, db_data_len: usize, account: i32) -> i64 {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
 
         let account = if account >= 0 {
             account as u32
@@ -531,10 +529,25 @@ pub extern "C" fn zcashlc_get_balance(db_data: *const u8, db_data_len: usize, ac
         };
         let account = AccountId(account);
 
-        match db_data.get_balance(account) {
-            Ok(balance) => Ok(balance.into()),
-            Err(e) => Err(format_err!("Error while fetching balance: {}", e)),
-        }
+        // match db_data.get_balance(account) {
+        //     Ok(balance) => Ok(balance.into()),
+        //     Err(e) => Err(format_err!("Error while fetching balance: {}", e)),
+        // }
+
+        (&db_data)
+            .get_target_and_anchor_heights()
+            .map_err(|e| format_err!("Error while fetching anchor height: {}", e))
+            .and_then(|opt_anchor| {
+                opt_anchor
+                    .map(|(h, _)| h)
+                    .ok_or(format_err!("height not available; scan required."))
+            })
+            .and_then(|height| {
+                (&db_data)
+                    .get_balance_at(account, height)
+                    .map_err(|e| format_err!("Error while fetching verified balance: {}", e))
+            })
+            .map(|amount| amount.into())
     });
     unwrap_exc_or(res, -1)
 }
@@ -548,7 +561,7 @@ pub extern "C" fn zcashlc_get_verified_balance(
     account: i32,
 ) -> i64 {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
         let account = if account >= 0 {
             account as u32
         } else {
@@ -586,7 +599,7 @@ pub extern "C" fn zcashlc_get_received_memo_as_utf8(
     id_note: i64,
 ) -> *mut c_char {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
 
         let memo = match (&db_data).get_received_memo_as_utf8(NoteId(id_note)) {
             Ok(memo) => memo.unwrap_or_default(),
@@ -611,7 +624,7 @@ pub extern "C" fn zcashlc_get_sent_memo_as_utf8(
     id_note: i64,
 ) -> *mut c_char {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
 
         let memo = (&db_data)
             .get_sent_memo_as_utf8(NoteId(id_note))
@@ -648,7 +661,7 @@ pub extern "C" fn zcashlc_validate_combined_chain(
 ) -> i32 {
     let res = catch_panic(|| {
         let block_db = block_db(db_cache, db_cache_len)?;
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
 
         let validate_from = (&db_data)
             .get_max_height_hash()
@@ -683,7 +696,7 @@ pub extern "C" fn zcashlc_rewind_to_height(
     height: i32,
 ) -> i32 {
     let res = catch_panic(|| {
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
 
         let mut update_ops = (&db_data)
             .get_update_ops()
@@ -722,7 +735,8 @@ pub extern "C" fn zcashlc_scan_blocks(
 ) -> i32 {
     let res = catch_panic(|| {
         let block_db = block_db(db_cache, db_cache_len)?;
-        let mut db_data = wallet_db(&NETWORK, db_data, db_data_len)?.get_update_ops()?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
+        let mut db_data = db_data.get_update_ops()?;
 
         match scan_cached_blocks(&NETWORK, &block_db, &mut db_data, None) {
             Ok(()) => Ok(1),
@@ -740,7 +754,8 @@ pub extern "C" fn zcashlc_decrypt_and_store_transaction(
     tx_len: usize,
 ) -> i32 {
     let res = catch_panic(|| {
-        let mut db_data = wallet_db(&NETWORK, db_data, db_data_len)?.get_update_ops()?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
+        let mut db_data = db_data.get_update_ops()?;
         let tx_bytes = unsafe { slice::from_raw_parts(tx, tx_len) };
         let tx = Transaction::read(&tx_bytes[..])?;
 
@@ -776,7 +791,8 @@ pub extern "C" fn zcashlc_create_to_address(
 ) -> i64 {
     let res = catch_panic(|| {
 
-        let mut db_data = wallet_db(&NETWORK, db_data, db_data_len)?.get_update_ops()?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
+        let mut db_data = db_data.get_update_ops()?;
         let account = if account >= 0 {
             account as u32
         } else {
@@ -1068,13 +1084,6 @@ fn shield_funds<P: consensus::Parameters>(
     // derive the corresponding t-address
     let t_addr_str = derive_transparent_address_from_secret_key(sk);
 
-    let t_addr = match RecipientAddress::decode(&NETWORK, &t_addr_str) {
-        Some(to) => to,
-        None => {
-            return Err(format_err!("PaymentAddress is for the wrong network"));
-        },
-    };
-
     let extsk =
         match decode_extended_spending_key(NETWORK.hrp_sapling_extended_spending_key(), &extsk)
         {
@@ -1236,7 +1245,7 @@ pub extern "C" fn zcashlc_shield_funds(
 ) -> i64 {
     let res = catch_panic(|| {
 
-        let db_data = wallet_db(&NETWORK, db_data, db_data_len)?;
+        let db_data = wallet_db(NETWORK, db_data, db_data_len)?;
         let db_cache = block_db(db_cache, db_cache_len)?;
         let account = if account >= 0 {
             account as u32
